@@ -3,6 +3,15 @@
 ## Overview
 HabitFlow is your personal companion designed to help you build and maintain positive daily routines. It gives you a clear way to track your progress, see your consistency over time, and stay motivated on your journey toward personal growth, all within an intuitive and clean interface.
 
+## Screenshots
+
+<div align="center">
+  <img src="assets/screen1.PNG" width="22%" />
+  <img src="assets/screen2.PNG" width="22%" />
+  <img src="assets/screen3.PNG" width="22%" />
+  <img src="assets/screen4.PNG" width="22%" />
+</div>
+
 ## Features
 -   **Effortless Habit Creation**: Easily set up new habits with custom names, expressive icons, and personalized colors.
 -   **Intuitive Daily Tracking**: Mark habits as complete or incomplete with a simple tap, keeping your daily progress up-to-date.
@@ -19,8 +28,8 @@ Since this is a mobile application, the "Getting Started" process involves cloni
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/HabitFlow.git
-cd HabitFlow
+git clone https://github.com/Victormarshall911/Habit-app.git
+cd Habit-app
 
 # Install dependencies
 npm install
@@ -73,8 +82,8 @@ We welcome contributions to make HabitFlow even better! If you're looking to con
 1.  **Fork the repository**: Start by forking the project to your own GitHub account.
 2.  **Clone your fork**:
     ```bash
-    git clone https://github.com/your-username/HabitFlow.git
-    cd HabitFlow
+    git clone https://github.com/Victormarshall911/Habit-app.git
+    cd Habit-app
     ```
 3.  **Create a new branch**:
     ```bash
@@ -99,8 +108,8 @@ This project is licensed under the MIT License.
 
 ## Author Info
 -   **Marshall Victor**
-    -   [LinkedIn](https://www.linkedin.com/in/your-linkedin-profile)
-    -   [X (formerly Twitter)](https://x.com/your-x-handle)
+    -   [LinkedIn](https://www.linkedin.com/in/victor-marshall)
+    -   [X (formerly Twitter)](https://x.com/victormarshall)
 
 ## Badges
 [![React Native](https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactnative.dev/)
