@@ -12,8 +12,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 
+import FadeInView from '../../src/components/FadeInView';
 import { useTheme } from '../../src/hooks/useTheme';
 import { useHabitStore } from '../../src/store/habitStore';
 import StreakBadge from '../../src/components/StreakBadge';
@@ -102,10 +102,7 @@ export default function HabitDetailScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 {/* Back Button */}
-                <Animated.View
-                    entering={FadeInDown.delay(50).springify()}
-                    style={styles.backRow}
-                >
+                <FadeInView delay={50} style={styles.backRow}>
                     <TouchableOpacity
                         onPress={() => router.back()}
                         style={styles.backButton}
@@ -123,13 +120,10 @@ export default function HabitDetailScreen() {
                     <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
                         <Ionicons name="trash-outline" size={20} color={colors.fire} />
                     </TouchableOpacity>
-                </Animated.View>
+                </FadeInView>
 
                 {/* Hero Section */}
-                <Animated.View
-                    entering={FadeInDown.delay(100).springify()}
-                    style={styles.heroSection}
-                >
+                <FadeInView delay={100} style={styles.heroSection}>
                     <View
                         style={[
                             styles.heroCard,
@@ -167,13 +161,10 @@ export default function HabitDetailScreen() {
                             Started {createdDate}
                         </Text>
                     </View>
-                </Animated.View>
+                </FadeInView>
 
                 {/* Today's Action */}
-                <Animated.View
-                    entering={FadeInDown.delay(200).springify()}
-                    style={styles.actionSection}
-                >
+                <FadeInView delay={200} style={styles.actionSection}>
                     <TouchableOpacity onPress={handleToggleToday} activeOpacity={0.85}>
                         <LinearGradient
                             colors={
@@ -201,13 +192,10 @@ export default function HabitDetailScreen() {
                             </Text>
                         </LinearGradient>
                     </TouchableOpacity>
-                </Animated.View>
+                </FadeInView>
 
                 {/* Stats Cards */}
-                <Animated.View
-                    entering={FadeInDown.delay(300).springify()}
-                    style={styles.statsRow}
-                >
+                <FadeInView delay={300} style={styles.statsRow}>
                     <View
                         style={[
                             styles.statCard,
@@ -267,10 +255,10 @@ export default function HabitDetailScreen() {
                             Total
                         </Text>
                     </View>
-                </Animated.View>
+                </FadeInView>
 
                 {/* Week Overview */}
-                <Animated.View entering={FadeInDown.delay(400).springify()}>
+                <FadeInView delay={400}>
                     <Text
                         style={[
                             styles.sectionTitle,
@@ -292,10 +280,10 @@ export default function HabitDetailScreen() {
                     >
                         <WeekOverview completions={habit.completions} color={habit.color} />
                     </View>
-                </Animated.View>
+                </FadeInView>
 
                 {/* Calendar Heatmaps */}
-                <Animated.View entering={FadeInDown.delay(500).springify()}>
+                <FadeInView delay={500}>
                     <Text
                         style={[
                             styles.sectionTitle,
@@ -325,7 +313,7 @@ export default function HabitDetailScreen() {
                             />
                         ))}
                     </View>
-                </Animated.View>
+                </FadeInView>
             </ScrollView>
         </View>
     );

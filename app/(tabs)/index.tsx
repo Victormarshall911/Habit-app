@@ -11,12 +11,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, {
-    FadeInDown,
-    FadeInUp,
-    LinearTransition,
-} from 'react-native-reanimated';
 
+import FadeInView from '../../src/components/FadeInView';
 import { useTheme } from '../../src/hooks/useTheme';
 import { useHabitStore } from '../../src/store/habitStore';
 import { getGreeting, getDateString, formatDateDisplay } from '../../src/utils/date';
@@ -61,10 +57,7 @@ export default function HomeScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 {/* Header */}
-                <Animated.View
-                    entering={FadeInDown.delay(100).springify()}
-                    style={styles.header}
-                >
+                <FadeInView delay={100} style={styles.header}>
                     <View>
                         <Text style={[styles.greeting, { color: colors.textSecondary }]}>
                             {greeting} 👋
@@ -73,14 +66,11 @@ export default function HomeScreen() {
                             {dateDisplay}
                         </Text>
                     </View>
-                </Animated.View>
+                </FadeInView>
 
                 {/* Progress Card */}
                 {habits.length > 0 && (
-                    <Animated.View
-                        entering={FadeInDown.delay(200).springify()}
-                        style={styles.progressSection}
-                    >
+                    <FadeInView delay={200} style={styles.progressSection}>
                         <View
                             style={[
                                 styles.progressCard,
@@ -151,52 +141,49 @@ export default function HomeScreen() {
                                 />
                             </View>
                         </View>
-                    </Animated.View>
+                    </FadeInView>
                 )}
 
                 {/* Section Title */}
                 {habits.length > 0 && (
-                    <Animated.View
-                        entering={FadeInDown.delay(300).springify()}
-                        style={styles.sectionHeader}
-                    >
+                    <FadeInView delay={300} style={styles.sectionHeader}>
                         <Text style={[styles.sectionTitle, { color: colors.text }]}>
                             Your Habits
                         </Text>
                         <Text style={[styles.habitCount, { color: colors.textMuted }]}>
                             {habits.length} habit{habits.length !== 1 ? 's' : ''}
                         </Text>
-                    </Animated.View>
+                    </FadeInView>
                 )}
 
                 {/* Habit List */}
                 {habits.length === 0 ? (
-                    <Animated.View entering={FadeInDown.delay(200).springify()}>
+                    <FadeInView delay={200}>
                         <EmptyState
                             emoji="🚀"
                             title="Start your journey"
                             subtitle="Add your first habit and begin building powerful daily routines. Consistency is the key to greatness!"
                         />
-                    </Animated.View>
+                    </FadeInView>
                 ) : (
                     habits.map((habit, index) => (
-                        <Animated.View
+                        <FadeInView
                             key={habit.id}
-                            entering={FadeInDown.delay(350 + index * 80).springify()}
-                            layout={LinearTransition.springify()}
+                            delay={350 + index * 80}
                         >
                             <HabitCard
                                 habit={habit}
                                 onPress={() => handleHabitPress(habit.id)}
                             />
-                        </Animated.View>
+                        </FadeInView>
                     ))
                 )}
             </ScrollView>
 
             {/* Floating Action Button */}
-            <Animated.View
-                entering={FadeInUp.delay(600).springify()}
+            <FadeInView
+                delay={600}
+                from="top"
                 style={[
                     styles.fabContainer,
                     { bottom: Platform.OS === 'ios' ? 100 : 80 },
@@ -212,7 +199,7 @@ export default function HomeScreen() {
                         <Ionicons name="add" size={28} color="#fff" />
                     </LinearGradient>
                 </TouchableOpacity>
-            </Animated.View>
+            </FadeInView>
         </View>
     );
 }

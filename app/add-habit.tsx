@@ -14,8 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
+import FadeInView from '../src/components/FadeInView';
 import { useTheme } from '../src/hooks/useTheme';
 import { useHabitStore } from '../src/store/habitStore';
 import {
@@ -64,15 +64,13 @@ export default function AddHabitScreen() {
                 style={[styles.container, { backgroundColor: colors.background }]}
             >
                 {/* Header */}
-                <Animated.View
-                    entering={FadeInDown.delay(50).springify()}
-                    style={[
-                        styles.header,
-                        {
-                            paddingTop: insets.top + Spacing.md,
-                            borderBottomColor: colors.border,
-                        },
-                    ]}
+                <FadeInView
+                    delay={50}
+                    style={{
+                        ...styles.header,
+                        paddingTop: insets.top + Spacing.md,
+                        borderBottomColor: colors.border,
+                    }}
                 >
                     <TouchableOpacity onPress={handleCancel} style={styles.headerButton}>
                         <Ionicons name="close" size={24} color={colors.textSecondary} />
@@ -98,7 +96,7 @@ export default function AddHabitScreen() {
                             Save
                         </Text>
                     </TouchableOpacity>
-                </Animated.View>
+                </FadeInView>
 
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}
@@ -106,10 +104,7 @@ export default function AddHabitScreen() {
                     keyboardShouldPersistTaps="handled"
                 >
                     {/* Preview */}
-                    <Animated.View
-                        entering={FadeInDown.delay(100).springify()}
-                        style={styles.previewSection}
-                    >
+                    <FadeInView delay={100} style={styles.previewSection}>
                         <View
                             style={[
                                 styles.previewCard,
@@ -144,10 +139,10 @@ export default function AddHabitScreen() {
                                 {name || 'Your habit name...'}
                             </Text>
                         </View>
-                    </Animated.View>
+                    </FadeInView>
 
                     {/* Name Input */}
-                    <Animated.View entering={FadeInDown.delay(200).springify()}>
+                    <FadeInView delay={200}>
                         <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
                             HABIT NAME
                         </Text>
@@ -170,10 +165,10 @@ export default function AddHabitScreen() {
                             maxLength={50}
                             returnKeyType="done"
                         />
-                    </Animated.View>
+                    </FadeInView>
 
                     {/* Emoji Picker */}
-                    <Animated.View entering={FadeInDown.delay(300).springify()}>
+                    <FadeInView delay={300}>
                         <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
                             CHOOSE AN ICON
                         </Text>
@@ -206,10 +201,10 @@ export default function AddHabitScreen() {
                                 </TouchableOpacity>
                             ))}
                         </View>
-                    </Animated.View>
+                    </FadeInView>
 
                     {/* Color Picker */}
-                    <Animated.View entering={FadeInDown.delay(400).springify()}>
+                    <FadeInView delay={400}>
                         <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
                             CHOOSE A COLOR
                         </Text>
@@ -236,10 +231,10 @@ export default function AddHabitScreen() {
                                 </TouchableOpacity>
                             ))}
                         </View>
-                    </Animated.View>
+                    </FadeInView>
 
                     {/* Save Button */}
-                    <Animated.View entering={FadeInUp.delay(500).springify()}>
+                    <FadeInView delay={500} from="top">
                         <TouchableOpacity
                             onPress={handleSave}
                             disabled={!name.trim()}
@@ -271,7 +266,7 @@ export default function AddHabitScreen() {
                                 </Text>
                             </LinearGradient>
                         </TouchableOpacity>
-                    </Animated.View>
+                    </FadeInView>
                 </ScrollView>
             </View>
         </KeyboardAvoidingView>
