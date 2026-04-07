@@ -1,14 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withRepeat,
-    withSequence,
-    withTiming,
-    Easing,
-} from 'react-native-reanimated';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { Spacing, Typography, BorderRadius } from '../constants/theme';
 
@@ -24,40 +15,52 @@ export default function StreakBadge({
     color,
 }: StreakBadgeProps) {
     const { colors } = useTheme();
-    const fireScale = useSharedValue(1);
-    const glowOpacity = useSharedValue(0.3);
+    const fireScale = useRef(new Animated.Value(1)).current;
+    const glowOpacity = useRef(new Animated.Value(0.3)).current;
 
     useEffect(() => {
         if (streak >= 7) {
             // Pulsing fire animation for streaks >= 7
-            fireScale.value = withRepeat(
-                withSequence(
-                    withTiming(1.2, { duration: 600, easing: Easing.inOut(Easing.ease) }),
-                    withTiming(1, { duration: 600, easing: Easing.inOut(Easing.ease) })
-                ),
-                -1,
-                true
-            );
-            glowOpacity.value = withRepeat(
-                withSequence(
-                    withTiming(0.8, { duration: 600 }),
-                    withTiming(0.3, { duration: 600 })
-                ),
-                -1,
-                true
-            );
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(fireScale, {
+                        toValue: 1.2,
+                        duration: 600,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(fireScale, {
+                        toValue: 1,
+                        duration: 600,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: true,
+                    }),
+                ])
+            ).start();
+
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(glowOpacity, {
+                        toValue: 0.8,
+                        duration: 600,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(glowOpacity, {
+                        toValue: 0.3,
+                        duration: 600,
+                        useNativeDriver: true,
+                    }),
+                ])
+            ).start();
         } else if (streak > 0) {
-            fireScale.value = withSpring(1.1, { damping: 8, stiffness: 200 });
+            Animated.spring(fireScale, {
+                toValue: 1.1,
+                useNativeDriver: true,
+                damping: 8,
+                stiffness: 200,
+            }).start();
         }
     }, [streak]);
-
-    const animatedFire = useAnimatedStyle(() => ({
-        transform: [{ scale: fireScale.value }],
-    }));
-
-    const animatedGlow = useAnimatedStyle(() => ({
-        opacity: glowOpacity.value,
-    }));
 
     const sizes = {
         sm: { fire: 16, text: 14, pad: 6, gap: 2 },
@@ -79,12 +82,17 @@ export default function StreakBadge({
                         {
                             backgroundColor: badgeColor,
                             borderRadius: BorderRadius.full,
+                            opacity: glowOpacity,
                         },
-                        animatedGlow,
                     ]}
                 />
             )}
-            <Animated.Text style={[{ fontSize: s.fire }, animatedFire]}>
+            <Animated.Text
+                style={[
+                    { fontSize: s.fire },
+                    { transform: [{ scale: fireScale }] },
+                ]}
+            >
                 🔥
             </Animated.Text>
             <Text

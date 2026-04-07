@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
     FadeInDown,
     FadeInUp,
-    Layout,
+    LinearTransition,
 } from 'react-native-reanimated';
 
 import { useTheme } from '../../src/hooks/useTheme';
@@ -183,7 +183,7 @@ export default function HomeScreen() {
                         <Animated.View
                             key={habit.id}
                             entering={FadeInDown.delay(350 + index * 80).springify()}
-                            layout={Layout.springify()}
+                            layout={LinearTransition.springify()}
                         >
                             <HabitCard
                                 habit={habit}
