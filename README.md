@@ -1,118 +1,102 @@
 # HabitFlow
 
 ## Overview
-HabitFlow is your personal companion designed to help you build and maintain positive daily routines. It gives you a clear way to track your progress, see your consistency over time, and stay motivated on your journey toward personal growth, all within an intuitive and clean interface.
 
-## Screenshots
-
-<div align="center">
-  <img src="assets/screen1.PNG" width="22%" />
-  <img src="assets/screen2.PNG" width="22%" />
-  <img src="assets/screen3.PNG" width="22%" />
-  <img src="assets/screen4.PNG" width="22%" />
-</div>
+This project is a mobile habit tracker designed to help you build and maintain daily routines. It lets you create and manage your habits, track your daily progress, and visualize your consistency over time, making it easier to stay motivated and reach your goals.
 
 ## Features
--   **Effortless Habit Creation**: Easily set up new habits with custom names, expressive icons, and personalized colors.
--   **Intuitive Daily Tracking**: Mark habits as complete or incomplete with a simple tap, keeping your daily progress up-to-date.
--   **Real-time Streak Calculation**: See your current and longest streaks instantly, motivating you to maintain consistency.
--   **Comprehensive Progress Monitoring**: Get a clear overview of your daily completion rate and overall habit statistics.
--   **Visual Progress History**: Explore your journey with detailed calendar heatmaps and weekly overviews to spot trends and milestones.
--   **Personalized Reminders**: Stay on track with timely notifications reminding you to complete your habits throughout the day.
--   **Adaptive Theme Support**: Enjoy a comfortable viewing experience with automatic dark and light mode switching based on your device settings.
--   **Streamlined Habit Management**: Easily edit habit details or remove habits as your routine evolves.
 
-## Getting Started
-Since this is a mobile application, the "Getting Started" process involves cloning the repository, installing dependencies, and running the Expo development server.
-
-### Installation
-```bash
-# Clone the repository
-git clone https://github.com/Victormarshall911/Habit-app.git
-cd Habit-app
-
-# Install dependencies
-npm install
-# or
-yarn install
-```
+*   **Personalized Habit Creation**: Easily add new habits, customizing each with a name, an emoji, and a distinct color.
+*   **Daily Tracking & Progress**: Mark habits as complete each day and see your overall progress with a visual daily tracker.
+*   **Detailed Habit Insights**: Dive into individual habit pages to view current and longest streaks, total completions, and historical data.
+*   **Visual Consistency Tracking**: Utilize a weekly overview and monthly calendar heatmaps to see your habit completion patterns at a glance.
+*   **Motivational Quotes**: Get inspired with a daily quote focused on consistency and personal growth.
+*   **Customizable Reminders**: Schedule daily notifications at your preferred times to help you stay on track.
+*   **Adaptive User Interface**: Enjoy a seamless experience with automatic light and dark mode switching based on your device settings.
+*   **Local Data Persistence**: All your habits and progress are saved directly on your device, ensuring privacy and quick access.
 
 ## Usage
-Once you've installed the dependencies, you can start the development server:
 
-```bash
-npm start
-# or
-yarn start
-```
+HabitFlow is a mobile application. Once you've set it up, you can start building your routines:
 
-This will open an Expo development server in your browser. From there, you can:
--   Scan the QR code with your phone using the Expo Go app (iOS or Android).
--   Run on an Android emulator by pressing 'a'.
--   Run on an iOS simulator by pressing 'i' (macOS only).
--   Run in a web browser by pressing 'w'.
-
-**Navigating the App**:
--   **Today Screen**: This is your daily dashboard. You'll see all your active habits and your progress for the current day.
-    -   Tap the large add button at the bottom right to add a new habit.
-    -   Tap the checkbox on any habit card to mark it as complete or incomplete for the day.
-    -   Tap anywhere else on a habit card to view its detailed history and statistics.
--   **Add Habit Screen**: Here, you can define your new habit. Give it a name, pick an emoji, and choose a color.
--   **Habit Detail Screen**: Dive deep into a specific habit's performance. See its current streak, longest streak, and a visual history through weekly overviews and calendar heatmaps. You can also delete the habit from here.
--   **Stats Screen**: Get an overview of all your habits' combined statistics, including total active streaks, best streaks, and total completions across all habits.
--   **Settings Screen**: Manage app notifications and view information about the app.
+1.  **Launch the App**: Open the HabitFlow app on your device.
+2.  **Add Your First Habit**:
+    *   On the main "Today" screen, you will see a large "Add Habit" button if you don't have any habits yet, or a floating action button (FAB) at the bottom right.
+    *   Tap the button to open the "New Habit" screen.
+    *   Enter a name for your habit, choose an emoji icon, and select a color.
+    *   Tap "Save" to create your habit.
+3.  **Track Daily Progress**:
+    *   On the "Today" screen, your habits will be listed.
+    *   Tap the checkbox next to a habit to mark it as complete for the day. Tap again to unmark it.
+    *   The circular progress indicator at the top will update to show your daily completion rate.
+4.  **View Habit Details**:
+    *   Tap on any habit card on the "Today" screen to see its dedicated detail page.
+    *   Here you can see your current and longest streaks, total completions, a weekly overview, and a monthly heatmap of your activity.
+    *   You can also mark the habit as done for today from this screen or delete the habit.
+5.  **Check Your Stats**:
+    *   Navigate to the "Stats" tab to see an overview of your progress across all habits, including total active streaks, best overall streak, and total completions.
+    *   Individual habit stats, including weekly overviews and calendar heatmaps, are also available here.
+6.  **Configure Settings**:
+    *   Go to the "Settings" tab to manage your notifications.
+    *   You can enable or disable habit reminders and customize the specific hours you want to receive them.
 
 ## Technologies Used
+
 | Technology | Description |
-|---|---|
-| [TypeScript](https://www.typescriptlang.org/) | JavaScript with syntax for types, enhancing code quality and developer experience. |
-| [React Native](https://reactnative.dev/) | A framework for building native mobile applications using React. |
-| [Expo](https://expo.dev/) | An open-source platform for making universal native apps with JavaScript and React. |
-| [Expo Router](https://docs.expo.dev/router/introduction/) | A file-system based router built on React Navigation for universal React Native apps. |
-| [Zustand](https://zustand-demo.pmnd.rs/) | A small, fast, and scalable bearbones state-management solution for React and React Native. |
-| [AsyncStorage](https://react-native-async-storage.github.io/async-storage/docs/install/) | An asynchronous, persistent, key-value storage system for React Native, used for local data persistence. |
-| [React Native SVG](https://github.com/react-native-svg/react-native-svg) | A library that allows rendering SVG images and shapes in React Native applications. |
-| [Expo Notifications](https://docs.expo.dev/versions/latest/sdk/notifications/) | The Expo API for handling local and push notifications, used for habit reminders. |
-| [Expo Haptics](https://docs.expo.dev/versions/latest/sdk/haptics/) | The Expo API for providing haptic feedback, enhancing user interaction. |
-| [Expo Linear Gradient](https://docs.expo.dev/versions/latest/sdk/linear-gradient/) | Renders a native linear gradient view, used for visual flair in the UI. |
+| :------------------------------ | :--------------------------------------------- |
+| [TypeScript](https://www.typescriptlang.org/) | Superset of JavaScript for type safety. |
+| [React Native](https://reactnative.dev/) | Framework for building native mobile apps. |
+| [Expo](https://expo.dev/) | Tools and services for building universal apps. |
+| [Expo Router](https://expo.github.io/router/) | File-system-based router for Expo and React Native. |
+| [Zustand](https://zustand-di.github.io/ | A small, fast, and scalable state management solution. |
+| [Expo Notifications](https://docs.expo.dev/versions/latest/sdk/notifications/) | API for handling local and push notifications. |
+| [Expo Haptics](https://docs.expo.dev/versions/latest/sdk/haptics/) | Provides tactile feedback. |
+| [React Native SVG](https://github.com/react-native-community/react-native-svg) | Library for rendering SVG images and elements. |
+| [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) | Persistent key-value storage for React Native. |
 
 ## Contributing
-We welcome contributions to make HabitFlow even better! If you're looking to contribute, here's how you can get started:
+
+We'd love for you to contribute to HabitFlow! Here are some guidelines:
 
 1.  **Fork the repository**: Start by forking the project to your own GitHub account.
-2.  **Clone your fork**:
+2.  **Clone the repository**: Clone your forked repository to your local machine.
     ```bash
-    git clone https://github.com/Victormarshall911/Habit-app.git
-    cd Habit-app
+    git clone https://github.com/your-username/HabitFlow.git
+    cd HabitFlow
     ```
-3.  **Create a new branch**:
+3.  **Install dependencies**:
+    ```bash
+    npm install
+    # or yarn install
+    ```
+4.  **Create a new branch**:
     ```bash
     git checkout -b feature/your-feature-name
     ```
-4.  **Make your changes**: Implement your feature or fix.
-5.  **Test your changes**: Ensure everything works as expected.
-6.  **Commit your changes**: Write a clear, concise commit message.
+5.  **Make your changes**: Implement your feature or fix.
+6.  **Test your changes**: Ensure everything works as expected.
+7.  **Commit your changes**: Write clear and concise commit messages.
     ```bash
-    git commit -m "feat: Add [brief description of feature]"
+    git commit -m "feat: Add new awesome feature"
     ```
-7.  **Push to your branch**:
+8.  **Push to your branch**:
     ```bash
     git push origin feature/your-feature-name
     ```
-8.  **Open a Pull Request**: Go to the original repository on GitHub and open a pull request. Provide a detailed description of your changes.
-
-Please ensure your code adheres to the existing style and conventions.
+9.  **Open a Pull Request**: Submit a pull request to the main `HabitFlow` repository. Please describe your changes in detail.
 
 ## License
-This project is licensed under the MIT License.
+
+This project does not currently have an explicit license file. Please contact the author for licensing information.
 
 ## Author Info
--   **Marshall Victor**
+
+*   **Marshall Victor**
     -   [LinkedIn](https://www.linkedin.com/in/marshall-victor-501460213/)
     -   [X (formerly Twitter)](https://x.com/marshallvicto18)
-
 ## Badges
-[![React Native](https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactnative.dev/)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactnative.dev/)
 [![Expo](https://img.shields.io/badge/Expo-1B1F23?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Zustand](https://img.shields.io/badge/Zustand-73B8A8?style=for-the-badge&logo=zustand&logoColor=white)](https://zustand-demo.pmnd.rs/)
+[![Zustand](https://img.shields.io/badge/Zustand-223441?style=for-the-badge&logo=zustand&logoColor=white)](https://zustand-di.github.io/)
