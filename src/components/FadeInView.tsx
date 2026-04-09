@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, ViewStyle } from 'react-native';
+import { Animated, ViewStyle, StyleProp } from 'react-native';
 
-interface FadeInViewProps {
+export interface FadeInViewProps {
     delay?: number;
     duration?: number;
     from?: 'bottom' | 'top';
     distance?: number;
-    style?: ViewStyle;
+    style?: StyleProp<ViewStyle>;
     children: React.ReactNode;
 }
 

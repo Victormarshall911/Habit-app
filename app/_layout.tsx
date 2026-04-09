@@ -3,7 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { initializeNotifications } from '../src/services/notifications';
+import { initializeNotifications, cancelAllReminders, scheduleHabitReminders } from '../src/services/notifications';
 import { updateAppIcon } from '../src/services/appIcon';
 import { useHabitStore } from '../src/store/habitStore';
 import { useTheme } from '../src/hooks/useTheme';
@@ -12,11 +12,24 @@ export default function RootLayout() {
     const { colors, isDark } = useTheme();
     const hasAnyBrokenStreak = useHabitStore((s) => s.hasAnyBrokenStreak);
     const habits = useHabitStore((s) => s.habits);
+    const isAllCompletedToday = useHabitStore((s) => s.isAllCompletedToday);
+    const reminderHours = useHabitStore((s) => s.reminderHours);
 
     useEffect(() => {
         // Initialize notifications on first launch
-        initializeNotifications();
+        initializeNotifications(reminderHours);
     }, []);
+
+    // Reactively cancel/re-schedule reminders based on completion status
+    useEffect(() => {
+        if (habits.length === 0) return;
+
+        if (isAllCompletedToday()) {
+            cancelAllReminders();
+        } else {
+            scheduleHabitReminders(reminderHours);
+        }
+    }, [habits, reminderHours]);
 
     useEffect(() => {
         // Update app icon whenever habits change

@@ -45,16 +45,24 @@ const REMINDER_MESSAGES = [
     { title: '🌙 Evening Wrap-up', body: "Last call! Complete your habits before the day ends." },
 ];
 
-// Schedule 4 reminders at 8am, 12pm, 4pm, 8pm
-const REMINDER_HOURS = [8, 12, 16, 20];
+function getMessageForHour(hour: number) {
+    if (hour < 11) return REMINDER_MESSAGES[0];
+    if (hour < 15) return REMINDER_MESSAGES[1];
+    if (hour < 19) return REMINDER_MESSAGES[2];
+    return REMINDER_MESSAGES[3];
+}
 
-export async function scheduleHabitReminders(): Promise<void> {
+// Default hours — used as fallback
+const DEFAULT_HOURS = [8, 12, 16, 20];
+
+export async function scheduleHabitReminders(customHours?: number[]): Promise<void> {
     // Cancel all existing scheduled notifications first
     await Notifications.cancelAllScheduledNotificationsAsync();
 
-    for (let i = 0; i < REMINDER_HOURS.length; i++) {
-        const hour = REMINDER_HOURS[i];
-        const message = REMINDER_MESSAGES[i];
+    const hours = customHours && customHours.length > 0 ? customHours : DEFAULT_HOURS;
+
+    for (const hour of hours) {
+        const message = getMessageForHour(hour);
 
         await Notifications.scheduleNotificationAsync({
             content: {
@@ -76,9 +84,9 @@ export async function cancelAllReminders(): Promise<void> {
     await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
-export async function initializeNotifications(): Promise<void> {
+export async function initializeNotifications(customHours?: number[]): Promise<void> {
     const granted = await requestNotificationPermissions();
     if (granted) {
-        await scheduleHabitReminders();
+        await scheduleHabitReminders(customHours);
     }
 }

@@ -13,10 +13,12 @@ export interface Habit {
 
 interface HabitState {
     habits: Habit[];
+    reminderHours: number[];
     addHabit: (habit: Omit<Habit, 'id' | 'createdAt' | 'completions'>) => void;
     editHabit: (id: string, updates: Partial<Pick<Habit, 'name' | 'emoji' | 'color'>>) => void;
     deleteHabit: (id: string) => void;
     toggleCompletion: (id: string, date: string) => void;
+    setReminderHours: (hours: number[]) => void;
     getStreak: (id: string) => number;
     getLongestStreak: (id: string) => number;
     getTodayProgress: () => { completed: number; total: number };
@@ -38,6 +40,7 @@ export const useHabitStore = create<HabitState>()(
     persist(
         (set, get) => ({
             habits: [],
+            reminderHours: [8, 12, 16, 20],
 
             addHabit: (habitData) => {
                 const newHabit: Habit = {
@@ -76,6 +79,10 @@ export const useHabitStore = create<HabitState>()(
                         return { ...h, completions: newCompletions };
                     }),
                 }));
+            },
+
+            setReminderHours: (hours) => {
+                set({ reminderHours: [...hours].sort((a, b) => a - b) });
             },
 
             getStreak: (id) => {
