@@ -25,6 +25,7 @@ import {
     BorderRadius,
     Shadows,
 } from '../../src/constants/theme';
+import { getDailyQuote } from '../../src/constants/quotes';
 
 export default function HomeScreen() {
     const { colors, isDark } = useTheme();
@@ -38,6 +39,7 @@ export default function HomeScreen() {
     const dateDisplay = formatDateDisplay(today);
     const progress = getTodayProgress();
     const progressRatio = progress.total > 0 ? progress.completed / progress.total : 0;
+    const dailyQuote = getDailyQuote();
 
     const handleAddHabit = useCallback(() => {
         router.push('/add-habit');
@@ -143,6 +145,22 @@ export default function HomeScreen() {
                         </View>
                     </FadeInView>
                 )}
+
+                {/* Daily Quote */}
+                <FadeInView delay={250} style={styles.quoteSection}>
+                    <View style={[styles.quoteCard, {
+                        backgroundColor: isDark ? 'rgba(124, 58, 237, 0.08)' : 'rgba(124, 58, 237, 0.05)',
+                        borderColor: isDark ? 'rgba(124, 58, 237, 0.2)' : 'rgba(124, 58, 237, 0.12)',
+                    }]}>
+                        <Text style={[styles.quoteIcon]}>💬</Text>
+                        <Text style={[styles.quoteText, { color: colors.text }]}>
+                            "{dailyQuote.text}"
+                        </Text>
+                        <Text style={[styles.quoteAuthor, { color: colors.textMuted }]}>
+                            — {dailyQuote.author}
+                        </Text>
+                    </View>
+                </FadeInView>
 
                 {/* Section Title */}
                 {habits.length > 0 && (
@@ -272,6 +290,31 @@ const styles = StyleSheet.create({
     },
     habitCount: {
         ...Typography.caption,
+    },
+    quoteSection: {
+        paddingHorizontal: Spacing.lg,
+        marginBottom: Spacing.xl,
+    },
+    quoteCard: {
+        borderRadius: BorderRadius.xl,
+        borderWidth: 1,
+        padding: Spacing.lg,
+        alignItems: 'center',
+    },
+    quoteIcon: {
+        fontSize: 20,
+        marginBottom: Spacing.sm,
+    },
+    quoteText: {
+        ...Typography.subhead,
+        fontStyle: 'italic',
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: Spacing.sm,
+    },
+    quoteAuthor: {
+        ...Typography.caption,
+        fontWeight: '600',
     },
     fabContainer: {
         position: 'absolute',

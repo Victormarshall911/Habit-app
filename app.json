@@ -1,47 +1,54 @@
 {
-    "expo": {
-        "name": "HabitFlow",
-        "slug": "habit-flow",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/icon.png",
-        "scheme": "habitflow",
-        "userInterfaceStyle": "automatic",
-        "newArchEnabled": true,
-        "splash": {
-            "image": "./assets/splash-icon.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#0F0A1A"
-        },
-        "ios": {
-            "supportsTablet": true,
-            "bundleIdentifier": "com.habitflow.app"
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/adaptive-icon.png",
-                "backgroundColor": "#0F0A1A"
-            },
-            "package": "com.habitflow.app"
-        },
-        "web": {
-            "bundler": "metro",
-            "output": "static",
-            "favicon": "./assets/favicon.png"
-        },
-        "plugins": [
-            "expo-router",
-            "expo-font",
-            [
-                "expo-notifications",
-                {
-                    "icon": "./assets/notification-icon.png",
-                    "color": "#7C3AED"
-                }
-            ]
-        ],
-        "experiments": {
-            "typedRoutes": true
+  "expo": {
+    "name": "HabitFlow",
+    "slug": "habit-flow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "habitflow",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F0A1A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.habitflow.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F0A1A"
+      },
+      "package": "com.habitflow.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#7C3AED"
         }
-    }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c9cb8260-9c82-43d7-989a-b17d70995186"
+      }
+    },
+    "owner": "chuks_007"
+  }
 }
