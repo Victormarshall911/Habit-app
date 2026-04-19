@@ -5,11 +5,15 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as Notifications from 'expo-notifications';
 import FadeInView from '../../src/components/FadeInView';
 import { useTheme } from '../../src/hooks/useTheme';
 import { useHabitStore } from '../../src/store/habitStore';
-import { scheduleHabitReminders, cancelAllReminders } from '../../src/services/notifications';
+import {
+    scheduleHabitReminders,
+    cancelAllReminders,
+    getNotificationPermissionStatus,
+    requestNotificationPermissions,
+} from '../../src/services/notifications';
 import { isIconSwitchingAvailable } from '../../src/services/appIcon';
 import { Spacing, Typography, BorderRadius, Shadows } from '../../src/constants/theme';
 
@@ -24,33 +28,38 @@ const ALL_HOURS = Array.from({ length: 24 }, (_, i) => i);
 export default function SettingsScreen() {
     const { colors, isDark } = useTheme();
     const insets = useSafeAreaInsets();
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
 
     const reminderHours = useHabitStore((s) => s.reminderHours);
     const setReminderHours = useHabitStore((s) => s.setReminderHours);
 
     useEffect(() => {
-        Notifications.getPermissionsAsync().then(({ status }) => {
+        getNotificationPermissionStatus().then((status) => {
             setNotificationsEnabled(status === 'granted');
         });
     }, []);
 
     const handleToggleNotifications = async (value: boolean) => {
-        if (value) {
-            const { status } = await Notifications.requestPermissionsAsync();
-            if (status === 'granted') {
-                await scheduleHabitReminders(reminderHours);
-                setNotificationsEnabled(true);
+        try {
+            if (value) {
+                const granted = await requestNotificationPermissions();
+                if (granted) {
+                    await scheduleHabitReminders(reminderHours);
+                    setNotificationsEnabled(true);
+                } else {
+                    Alert.alert('Permissions Required',
+                        'Please enable notifications in your device settings.',
+                        [{ text: 'Cancel', style: 'cancel' },
+                        { text: 'Open Settings', onPress: () => Linking.openSettings() }]);
+                }
             } else {
-                Alert.alert('Permissions Required',
-                    'Please enable notifications in your device settings.',
-                    [{ text: 'Cancel', style: 'cancel' },
-                    { text: 'Open Settings', onPress: () => Linking.openSettings() }]);
+                await cancelAllReminders();
+                setNotificationsEnabled(false);
             }
-        } else {
-            await cancelAllReminders();
-            setNotificationsEnabled(false);
+        } catch (e) {
+            console.warn('Notification toggle failed:', e);
+            Alert.alert('Error', 'Something went wrong with notifications.');
         }
     };
 

@@ -1,41 +1,97 @@
-import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { Platform, LogBox } from 'react-native';
 
-// Configure how notifications appear when the app is in the foreground
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-    }),
-});
+// Suppress the known Expo Go warning about push notifications
+// Local/scheduled notifications still work fine in Expo Go —
+// only remote push was removed in SDK 53.
+LogBox.ignoreLogs([
+    'expo-notifications',
+    '`expo-notifications` functionality is not fully supported in Expo Go',
+]);
+
+// Lazily loaded module — only loaded on first actual API call
+let Notifications: typeof import('expo-notifications') | null = null;
+let handlerConfigured = false;
+
+function getNotificationsModule() {
+    if (Notifications) return Notifications;
+    try {
+        Notifications = require('expo-notifications');
+    } catch (e) {
+        console.warn('expo-notifications could not be loaded:', e);
+        return null;
+    }
+    return Notifications;
+}
+
+/**
+ * Configures how notifications appear in the foreground.
+ * Called lazily before any scheduling/permission operation.
+ */
+function ensureHandlerConfigured() {
+    if (handlerConfigured) return;
+    handlerConfigured = true;
+    const mod = getNotificationsModule();
+    if (!mod) return;
+    try {
+        mod.setNotificationHandler({
+            handleNotification: async () => ({
+                shouldShowAlert: true,
+                shouldPlaySound: true,
+                shouldSetBadge: true,
+                shouldShowBanner: true,
+                shouldShowList: true,
+            }),
+        });
+    } catch (e) {
+        console.warn('Failed to set notification handler:', e);
+    }
+}
+
+export async function getNotificationPermissionStatus(): Promise<string> {
+    ensureHandlerConfigured();
+    const mod = getNotificationsModule();
+    if (!mod) return 'unavailable';
+    try {
+        const { status } = await mod.getPermissionsAsync();
+        return status;
+    } catch (e) {
+        console.warn('Failed to get notification permissions:', e);
+        return 'unavailable';
+    }
+}
 
 export async function requestNotificationPermissions(): Promise<boolean> {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+    ensureHandlerConfigured();
+    const mod = getNotificationsModule();
+    if (!mod) return false;
+    try {
+        const { status: existingStatus } = await mod.getPermissionsAsync();
+        let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-    }
+        if (existingStatus !== 'granted') {
+            const { status } = await mod.requestPermissionsAsync();
+            finalStatus = status;
+        }
 
-    if (finalStatus !== 'granted') {
+        if (finalStatus !== 'granted') {
+            return false;
+        }
+
+        if (Platform.OS === 'android') {
+            await mod.setNotificationChannelAsync('habit-reminders', {
+                name: 'Habit Reminders',
+                importance: mod.AndroidImportance.HIGH,
+                vibrationPattern: [0, 250, 250, 250],
+                lightColor: '#7C3AED',
+                sound: 'default',
+            });
+        }
+
+        return true;
+    } catch (e) {
+        console.warn('Notification permissions not available:', e);
         return false;
     }
-
-    if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('habit-reminders', {
-            name: 'Habit Reminders',
-            importance: Notifications.AndroidImportance.HIGH,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#7C3AED',
-            sound: 'default',
-        });
-    }
-
-    return true;
 }
 
 const REMINDER_MESSAGES = [
@@ -52,41 +108,63 @@ function getMessageForHour(hour: number) {
     return REMINDER_MESSAGES[3];
 }
 
-// Default hours — used as fallback
+// Default reminder hours
 const DEFAULT_HOURS = [8, 12, 16, 20];
 
 export async function scheduleHabitReminders(customHours?: number[]): Promise<void> {
-    // Cancel all existing scheduled notifications first
-    await Notifications.cancelAllScheduledNotificationsAsync();
+    ensureHandlerConfigured();
+    const mod = getNotificationsModule();
+    if (!mod) return;
+    try {
+        // Cancel all existing scheduled notifications first
+        await mod.cancelAllScheduledNotificationsAsync();
 
-    const hours = customHours && customHours.length > 0 ? customHours : DEFAULT_HOURS;
+        const hours = customHours && customHours.length > 0 ? customHours : DEFAULT_HOURS;
 
-    for (const hour of hours) {
-        const message = getMessageForHour(hour);
+        for (const hour of hours) {
+            const message = getMessageForHour(hour);
 
-        await Notifications.scheduleNotificationAsync({
-            content: {
-                title: message.title,
-                body: message.body,
-                sound: 'default',
-                ...(Platform.OS === 'android' && { channelId: 'habit-reminders' }),
-            },
-            trigger: {
-                type: Notifications.SchedulableTriggerInputTypes.DAILY,
-                hour: hour,
-                minute: 0,
-            },
-        });
+            await mod.scheduleNotificationAsync({
+                content: {
+                    title: message.title,
+                    body: message.body,
+                    sound: 'default',
+                    ...(Platform.OS === 'android' && { channelId: 'habit-reminders' }),
+                },
+                trigger: {
+                    type: mod.SchedulableTriggerInputTypes.DAILY,
+                    hour: hour,
+                    minute: 0,
+                },
+            });
+        }
+    } catch (e) {
+        console.warn('Failed to schedule notifications:', e);
     }
 }
 
 export async function cancelAllReminders(): Promise<void> {
-    await Notifications.cancelAllScheduledNotificationsAsync();
+    const mod = getNotificationsModule();
+    if (!mod) return;
+    try {
+        await mod.cancelAllScheduledNotificationsAsync();
+    } catch (e) {
+        console.warn('Failed to cancel notifications:', e);
+    }
 }
 
 export async function initializeNotifications(customHours?: number[]): Promise<void> {
-    const granted = await requestNotificationPermissions();
-    if (granted) {
-        await scheduleHabitReminders(customHours);
+    try {
+        const granted = await requestNotificationPermissions();
+        if (granted) {
+            await scheduleHabitReminders(customHours);
+        }
+    } catch (e) {
+        console.warn('Failed to initialize notifications:', e);
     }
+}
+
+/** Returns true if the notifications module loaded successfully */
+export function isNotificationsAvailable(): boolean {
+    return getNotificationsModule() !== null;
 }
