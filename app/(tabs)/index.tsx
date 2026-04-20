@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import {
     View,
     Text,
@@ -11,15 +11,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 
 import FadeInView from '../../src/components/FadeInView';
 import { useTheme } from '../../src/hooks/useTheme';
-import { useHabitStore } from '../../src/store/habitStore';
+import { useHabitStore, HabitCategory } from '../../src/store/habitStore';
 import { getGreeting, getDateString, formatDateDisplay } from '../../src/utils/date';
 import HabitCard from '../../src/components/HabitCard';
 import CircularProgress from '../../src/components/CircularProgress';
 import EmptyState from '../../src/components/EmptyState';
 import {
+    HabitCategories,
     Spacing,
     Typography,
     BorderRadius,
@@ -32,22 +34,79 @@ export default function HomeScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const habits = useHabitStore((s) => s.habits);
-    const getTodayProgress = useHabitStore((s) => s.getTodayProgress);
+    const reorderHabits = useHabitStore((s) => s.reorderHabits);
+
+    const activeHabits = React.useMemo(() =>
+        habits
+            .filter(h => !h.archived)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+        [habits]);
+
+    const progress = React.useMemo(() => {
+        const today = getDateString();
+        const active = habits.filter(h => !(h.archived ?? false));
+        const completed = active.filter((h) => h.completions[today]).length;
+        return { completed, total: active.length };
+    }, [habits]);
+
+    const [selectedCategory, setSelectedCategory] = React.useState<HabitCategory | 'all'>('all');
+    const [editMode, setEditMode] = React.useState(false);
 
     const today = getDateString();
     const greeting = getGreeting();
     const dateDisplay = formatDateDisplay(today);
-    const progress = getTodayProgress();
     const progressRatio = progress.total > 0 ? progress.completed / progress.total : 0;
     const dailyQuote = getDailyQuote();
 
-    const handleAddHabit = useCallback(() => {
+
+    const filteredHabits = React.useMemo(() => {
+        if (selectedCategory === 'all') return activeHabits;
+        return activeHabits.filter(h => (h.category || 'other') === selectedCategory);
+    }, [activeHabits, selectedCategory]);
+
+    // Determine which categories are actually in use
+    const usedCategories = React.useMemo(() => {
+        const cats = new Set(activeHabits.map(h => h.category || 'other'));
+        return HabitCategories.filter(c => cats.has(c.key));
+    }, [activeHabits]);
+
+    const handleAddHabit = React.useCallback(() => {
         router.push('/add-habit');
     }, []);
 
-    const handleHabitPress = useCallback((id: string) => {
-        router.push(`/habit/${id}`);
-    }, []);
+    const handleHabitPress = React.useCallback((id: string) => {
+        if (!editMode) router.push(`/habit/${id}`);
+    }, [editMode]);
+
+    const handleMoveUp = (index: number) => {
+        if (index === 0) return;
+        Haptics.selectionAsync();
+
+        const habitToMove = filteredHabits[index];
+        const habitAbove = filteredHabits[index - 1];
+
+        const newAllIds = [...activeHabits.map(h => h.id)];
+        const globalIdx = newAllIds.indexOf(habitToMove.id);
+        const targetGlobalIdx = newAllIds.indexOf(habitAbove.id);
+
+        [newAllIds[globalIdx], newAllIds[targetGlobalIdx]] = [newAllIds[targetGlobalIdx], newAllIds[globalIdx]];
+        reorderHabits(newAllIds);
+    };
+
+    const handleMoveDown = (index: number) => {
+        if (index >= filteredHabits.length - 1) return;
+        Haptics.selectionAsync();
+
+        const habitToMove = filteredHabits[index];
+        const habitBelow = filteredHabits[index + 1];
+
+        const newAllIds = [...activeHabits.map(h => h.id)];
+        const globalIdx = newAllIds.indexOf(habitToMove.id);
+        const targetGlobalIdx = newAllIds.indexOf(habitBelow.id);
+
+        [newAllIds[globalIdx], newAllIds[targetGlobalIdx]] = [newAllIds[targetGlobalIdx], newAllIds[globalIdx]];
+        reorderHabits(newAllIds);
+    };
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -71,7 +130,7 @@ export default function HomeScreen() {
                 </FadeInView>
 
                 {/* Progress Card */}
-                {habits.length > 0 && (
+                {activeHabits.length > 0 && (
                     <FadeInView delay={200} style={styles.progressSection}>
                         <View
                             style={[
@@ -162,20 +221,92 @@ export default function HomeScreen() {
                     </View>
                 </FadeInView>
 
+                {/* Category Filter */}
+                {activeHabits.length > 0 && usedCategories.length > 1 && (
+                    <FadeInView delay={280}>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.categoryFilterRow}
+                        >
+                            <TouchableOpacity
+                                onPress={() => {
+                                    Haptics.selectionAsync();
+                                    setSelectedCategory('all');
+                                }}
+                                style={[
+                                    styles.filterChip,
+                                    {
+                                        backgroundColor: selectedCategory === 'all'
+                                            ? colors.primary + '25'
+                                            : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+                                        borderColor: selectedCategory === 'all' ? colors.primary : colors.border,
+                                    },
+                                ]}
+                            >
+                                <Text style={[styles.filterChipText, { color: selectedCategory === 'all' ? colors.primary : colors.textSecondary }]}>
+                                    All
+                                </Text>
+                            </TouchableOpacity>
+                            {usedCategories.map((cat) => (
+                                <TouchableOpacity
+                                    key={cat.key}
+                                    onPress={() => {
+                                        Haptics.selectionAsync();
+                                        setSelectedCategory(cat.key as HabitCategory);
+                                    }}
+                                    style={[
+                                        styles.filterChip,
+                                        {
+                                            backgroundColor: selectedCategory === cat.key
+                                                ? cat.color + '25'
+                                                : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+                                            borderColor: selectedCategory === cat.key ? cat.color : colors.border,
+                                        },
+                                    ]}
+                                >
+                                    <Text style={styles.filterEmoji}>{cat.emoji}</Text>
+                                    <Text style={[styles.filterChipText, { color: selectedCategory === cat.key ? cat.color : colors.textSecondary }]}>
+                                        {cat.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </FadeInView>
+                )}
+
                 {/* Section Title */}
-                {habits.length > 0 && (
+                {activeHabits.length > 0 && (
                     <FadeInView delay={300} style={styles.sectionHeader}>
                         <Text style={[styles.sectionTitle, { color: colors.text }]}>
                             Your Habits
                         </Text>
-                        <Text style={[styles.habitCount, { color: colors.textMuted }]}>
-                            {habits.length} habit{habits.length !== 1 ? 's' : ''}
-                        </Text>
+                        <View style={styles.sectionActions}>
+                            <Text style={[styles.habitCount, { color: colors.textMuted }]}>
+                                {filteredHabits.length} habit{filteredHabits.length !== 1 ? 's' : ''}
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    Haptics.selectionAsync();
+                                    setEditMode(!editMode);
+                                }}
+                                style={[styles.editButton, { backgroundColor: editMode ? colors.primary + '20' : 'transparent' }]}
+                            >
+                                <Ionicons
+                                    name={editMode ? 'checkmark' : 'reorder-three'}
+                                    size={18}
+                                    color={editMode ? colors.primary : colors.textMuted}
+                                />
+                                <Text style={[styles.editText, { color: editMode ? colors.primary : colors.textMuted }]}>
+                                    {editMode ? 'Done' : 'Edit'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </FadeInView>
                 )}
 
                 {/* Habit List */}
-                {habits.length === 0 ? (
+                {activeHabits.length === 0 ? (
                     <FadeInView delay={200}>
                         <EmptyState
                             emoji="🚀"
@@ -184,7 +315,7 @@ export default function HomeScreen() {
                         />
                     </FadeInView>
                 ) : (
-                    habits.map((habit, index) => (
+                    filteredHabits.map((habit, index) => (
                         <FadeInView
                             key={habit.id}
                             delay={350 + index * 80}
@@ -192,6 +323,11 @@ export default function HomeScreen() {
                             <HabitCard
                                 habit={habit}
                                 onPress={() => handleHabitPress(habit.id)}
+                                showReorderControls={editMode}
+                                onMoveUp={() => handleMoveUp(index)}
+                                onMoveDown={() => handleMoveDown(index)}
+                                isFirst={index === 0}
+                                isLast={index === filteredHabits.length - 1}
                             />
                         </FadeInView>
                     ))
@@ -199,25 +335,27 @@ export default function HomeScreen() {
             </ScrollView>
 
             {/* Floating Action Button */}
-            <FadeInView
-                delay={600}
-                from="top"
-                style={[
-                    styles.fabContainer,
-                    { bottom: Platform.OS === 'ios' ? 100 : 80 },
-                ]}
-            >
-                <TouchableOpacity onPress={handleAddHabit} activeOpacity={0.85}>
-                    <LinearGradient
-                        colors={[colors.primary, colors.primaryDark]}
-                        style={styles.fab}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                    >
-                        <Ionicons name="add" size={28} color="#fff" />
-                    </LinearGradient>
-                </TouchableOpacity>
-            </FadeInView>
+            {!editMode && (
+                <FadeInView
+                    delay={600}
+                    from="top"
+                    style={[
+                        styles.fabContainer,
+                        { bottom: Platform.OS === 'ios' ? 100 : 80 },
+                    ]}
+                >
+                    <TouchableOpacity onPress={handleAddHabit} activeOpacity={0.85}>
+                        <LinearGradient
+                            colors={[colors.primary, colors.primaryDark]}
+                            style={styles.fab}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                        >
+                            <Ionicons name="add" size={28} color="#fff" />
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </FadeInView>
+            )}
         </View>
     );
 }
@@ -278,6 +416,28 @@ const styles = StyleSheet.create({
         ...Typography.caption,
         fontWeight: '700',
     },
+    // Category filter
+    categoryFilterRow: {
+        paddingHorizontal: Spacing.lg,
+        gap: Spacing.sm,
+        marginBottom: Spacing.md,
+    },
+    filterChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: Spacing.md,
+        paddingVertical: Spacing.sm,
+        borderRadius: BorderRadius.full,
+        borderWidth: 1,
+        gap: 4,
+    },
+    filterEmoji: {
+        fontSize: 13,
+    },
+    filterChipText: {
+        ...Typography.caption,
+        fontWeight: '600',
+    },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -288,8 +448,25 @@ const styles = StyleSheet.create({
     sectionTitle: {
         ...Typography.title3,
     },
+    sectionActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.sm,
+    },
     habitCount: {
         ...Typography.caption,
+    },
+    editButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: Spacing.sm,
+        paddingVertical: 4,
+        borderRadius: BorderRadius.full,
+        gap: 3,
+    },
+    editText: {
+        ...Typography.caption,
+        fontWeight: '600',
     },
     quoteSection: {
         paddingHorizontal: Spacing.lg,

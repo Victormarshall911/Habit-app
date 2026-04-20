@@ -195,3 +195,13 @@ export const HabitEmojis = [
     '🍎', '😴', '🧹', '💊', '🚶', '🎨', '💰', '🙏',
     '🏋️', '📝', '🥗', '☕', '🧠', '🌿', '🎸', '📖',
 ];
+
+export const HabitCategories = [
+    { key: 'health', label: 'Health', emoji: '❤️', color: '#EF4444' },
+    { key: 'fitness', label: 'Fitness', emoji: '🏋️', color: '#F97316' },
+    { key: 'productivity', label: 'Productivity', emoji: '⚡', color: '#3B82F6' },
+    { key: 'mindfulness', label: 'Mindfulness', emoji: '🧘', color: '#8B5CF6' },
+    { key: 'learning', label: 'Learning', emoji: '📚', color: '#06D6A0' },
+    { key: 'lifestyle', label: 'Lifestyle', emoji: '🌿', color: '#14B8A6' },
+    { key: 'other', label: 'Other', emoji: '📌', color: '#64748B' },
+] as const;

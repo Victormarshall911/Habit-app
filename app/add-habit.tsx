@@ -17,15 +17,22 @@ import * as Haptics from 'expo-haptics';
 
 import FadeInView from '../src/components/FadeInView';
 import { useTheme } from '../src/hooks/useTheme';
-import { useHabitStore } from '../src/store/habitStore';
+import { useHabitStore, HabitCategory, FrequencyType } from '../src/store/habitStore';
 import {
     HabitColors,
     HabitEmojis,
+    HabitCategories,
     Spacing,
     Typography,
     BorderRadius,
     Shadows,
 } from '../src/constants/theme';
+
+const FREQUENCY_OPTIONS: { type: FrequencyType; label: string; icon: string }[] = [
+    { type: 'daily', label: 'Daily', icon: 'today' },
+    { type: 'weekly', label: 'Weekly', icon: 'calendar' },
+    { type: 'monthly', label: 'Monthly', icon: 'calendar-outline' },
+];
 
 export default function AddHabitScreen() {
     const { colors, isDark } = useTheme();
@@ -36,6 +43,9 @@ export default function AddHabitScreen() {
     const [name, setName] = useState('');
     const [selectedEmoji, setSelectedEmoji] = useState('💪');
     const [selectedColor, setSelectedColor] = useState(HabitColors[0]);
+    const [selectedCategory, setSelectedCategory] = useState<HabitCategory>('other');
+    const [frequencyType, setFrequencyType] = useState<FrequencyType>('daily');
+    const [frequencyTarget, setFrequencyTarget] = useState(1);
 
     const handleSave = async () => {
         if (!name.trim()) return;
@@ -46,6 +56,8 @@ export default function AddHabitScreen() {
             name: name.trim(),
             emoji: selectedEmoji,
             color: selectedColor,
+            category: selectedCategory,
+            frequency: { type: frequencyType, target: frequencyTarget },
         });
 
         router.back();
@@ -54,6 +66,17 @@ export default function AddHabitScreen() {
     const handleCancel = () => {
         router.back();
     };
+
+    const handleFrequencyTypeChange = (type: FrequencyType) => {
+        Haptics.selectionAsync();
+        setFrequencyType(type);
+        // Set sensible default targets
+        if (type === 'daily') setFrequencyTarget(1);
+        else if (type === 'weekly') setFrequencyTarget(3);
+        else setFrequencyTarget(20);
+    };
+
+    const maxTarget = frequencyType === 'daily' ? 1 : frequencyType === 'weekly' ? 7 : 31;
 
     return (
         <KeyboardAvoidingView
@@ -87,7 +110,7 @@ export default function AddHabitScreen() {
                     >
                         <Text
                             style={[
-                                styles.saveButton,
+                                styles.saveButtonText,
                                 {
                                     color: name.trim() ? colors.primary : colors.textMuted,
                                 },
@@ -138,6 +161,13 @@ export default function AddHabitScreen() {
                             >
                                 {name || 'Your habit name...'}
                             </Text>
+                            {selectedCategory !== 'other' && (
+                                <View style={[styles.previewCategoryBadge, { backgroundColor: HabitCategories.find(c => c.key === selectedCategory)?.color + '20' }]}>
+                                    <Text style={[styles.previewCategoryText, { color: HabitCategories.find(c => c.key === selectedCategory)?.color }]}>
+                                        {HabitCategories.find(c => c.key === selectedCategory)?.emoji} {HabitCategories.find(c => c.key === selectedCategory)?.label}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
                     </FadeInView>
 
@@ -167,8 +197,116 @@ export default function AddHabitScreen() {
                         />
                     </FadeInView>
 
-                    {/* Emoji Picker */}
+                    {/* Category Picker */}
+                    <FadeInView delay={250}>
+                        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+                            CATEGORY
+                        </Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+                            <View style={styles.categoryRow}>
+                                {HabitCategories.map((cat) => {
+                                    const isSelected = selectedCategory === cat.key;
+                                    return (
+                                        <TouchableOpacity
+                                            key={cat.key}
+                                            onPress={() => {
+                                                Haptics.selectionAsync();
+                                                setSelectedCategory(cat.key as HabitCategory);
+                                            }}
+                                            style={[
+                                                styles.categoryChip,
+                                                {
+                                                    backgroundColor: isSelected
+                                                        ? cat.color + '25'
+                                                        : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+                                                    borderColor: isSelected ? cat.color : 'transparent',
+                                                    borderWidth: isSelected ? 2 : 0,
+                                                },
+                                            ]}
+                                        >
+                                            <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
+                                            <Text style={[styles.categoryLabel, { color: isSelected ? cat.color : colors.textSecondary }]}>
+                                                {cat.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </ScrollView>
+                    </FadeInView>
+
+                    {/* Frequency Picker */}
                     <FadeInView delay={300}>
+                        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+                            FREQUENCY
+                        </Text>
+                        <View style={styles.frequencyTypeRow}>
+                            {FREQUENCY_OPTIONS.map((opt) => {
+                                const isSelected = frequencyType === opt.type;
+                                return (
+                                    <TouchableOpacity
+                                        key={opt.type}
+                                        onPress={() => handleFrequencyTypeChange(opt.type)}
+                                        style={[
+                                            styles.frequencyTypeChip,
+                                            {
+                                                backgroundColor: isSelected
+                                                    ? selectedColor + '25'
+                                                    : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+                                                borderColor: isSelected ? selectedColor : colors.border,
+                                            },
+                                        ]}
+                                    >
+                                        <Ionicons
+                                            name={opt.icon as any}
+                                            size={18}
+                                            color={isSelected ? selectedColor : colors.textSecondary}
+                                        />
+                                        <Text style={[
+                                            styles.frequencyTypeLabel,
+                                            { color: isSelected ? selectedColor : colors.textSecondary },
+                                        ]}>
+                                            {opt.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+
+                        {frequencyType !== 'daily' && (
+                            <View style={[styles.targetRow, { borderColor: colors.border }]}>
+                                <Text style={[styles.targetLabel, { color: colors.textSecondary }]}>
+                                    Target: {frequencyTarget}x {frequencyType === 'weekly' ? 'per week' : 'per month'}
+                                </Text>
+                                <View style={styles.targetControls}>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            Haptics.selectionAsync();
+                                            setFrequencyTarget(Math.max(1, frequencyTarget - 1));
+                                        }}
+                                        style={[styles.targetButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}
+                                    >
+                                        <Ionicons name="remove" size={20} color={colors.text} />
+                                    </TouchableOpacity>
+                                    <Text style={[styles.targetValue, { color: selectedColor }]}>
+                                        {frequencyTarget}
+                                    </Text>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            Haptics.selectionAsync();
+                                            setFrequencyTarget(Math.min(maxTarget, frequencyTarget + 1));
+                                        }}
+                                        style={[styles.targetButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}
+                                    >
+                                        <Ionicons name="add" size={20} color={colors.text} />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+                    </FadeInView>
+
+                    {/* Emoji Picker */}
+                    <FadeInView delay={350}>
                         <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
                             CHOOSE AN ICON
                         </Text>
@@ -258,7 +396,7 @@ export default function AddHabitScreen() {
                                 />
                                 <Text
                                     style={[
-                                        styles.saveButtonText,
+                                        styles.saveButtonLabel,
                                         { color: name.trim() ? '#fff' : colors.textMuted },
                                     ]}
                                 >
@@ -292,7 +430,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         ...Typography.headline,
     },
-    saveButton: {
+    saveButtonText: {
         ...Typography.headline,
         textAlign: 'right',
     },
@@ -325,6 +463,16 @@ const styles = StyleSheet.create({
         ...Typography.title3,
         textAlign: 'center',
     },
+    previewCategoryBadge: {
+        marginTop: Spacing.sm,
+        paddingHorizontal: Spacing.md,
+        paddingVertical: Spacing.xs,
+        borderRadius: BorderRadius.full,
+    },
+    previewCategoryText: {
+        ...Typography.caption,
+        fontWeight: '600',
+    },
     sectionLabel: {
         ...Typography.caption,
         fontWeight: '600',
@@ -337,6 +485,78 @@ const styles = StyleSheet.create({
         borderRadius: BorderRadius.lg,
         padding: Spacing.lg,
         ...Typography.body,
+    },
+    // Category
+    categoryScroll: {
+        marginHorizontal: -Spacing.xl,
+        paddingHorizontal: Spacing.xl,
+    },
+    categoryRow: {
+        flexDirection: 'row',
+        gap: Spacing.sm,
+    },
+    categoryChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: Spacing.lg,
+        paddingVertical: Spacing.md,
+        borderRadius: BorderRadius.full,
+        gap: Spacing.xs,
+    },
+    categoryEmoji: {
+        fontSize: 16,
+    },
+    categoryLabel: {
+        ...Typography.footnote,
+        fontWeight: '600',
+    },
+    // Frequency
+    frequencyTypeRow: {
+        flexDirection: 'row',
+        gap: Spacing.sm,
+    },
+    frequencyTypeChip: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: Spacing.md,
+        borderRadius: BorderRadius.lg,
+        borderWidth: 1,
+        gap: Spacing.xs,
+    },
+    frequencyTypeLabel: {
+        ...Typography.footnote,
+        fontWeight: '600',
+    },
+    targetRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: Spacing.md,
+        paddingTop: Spacing.md,
+        borderTopWidth: 1,
+    },
+    targetLabel: {
+        ...Typography.subhead,
+    },
+    targetControls: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.md,
+    },
+    targetButton: {
+        width: 36,
+        height: 36,
+        borderRadius: BorderRadius.full,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    targetValue: {
+        ...Typography.title2,
+        fontWeight: '800',
+        minWidth: 30,
+        textAlign: 'center',
     },
     emojiGrid: {
         flexDirection: 'row',
@@ -380,7 +600,7 @@ const styles = StyleSheet.create({
         gap: Spacing.sm,
         ...Shadows.md,
     },
-    saveButtonText: {
+    saveButtonLabel: {
         ...Typography.headline,
     },
 });

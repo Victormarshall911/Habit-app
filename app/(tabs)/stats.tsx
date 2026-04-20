@@ -14,9 +14,11 @@ import { Spacing, Typography, BorderRadius, Shadows } from '../../src/constants/
 export default function StatsScreen() {
     const { colors, isDark } = useTheme();
     const insets = useSafeAreaInsets();
-    const habits = useHabitStore((s) => s.habits);
+    const allHabits = useHabitStore((s) => s.habits);
     const getStreak = useHabitStore((s) => s.getStreak);
     const getLongestStreak = useHabitStore((s) => s.getLongestStreak);
+
+    const habits = allHabits.filter(h => !(h.archived ?? false));
 
     const totalCurrentStreak = habits.reduce((sum, h) => sum + getStreak(h.id), 0);
     const totalLongestStreak = habits.reduce((sum, h) => Math.max(sum, getLongestStreak(h.id)), 0);

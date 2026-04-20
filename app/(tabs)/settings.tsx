@@ -4,7 +4,11 @@ import {
     TouchableOpacity, Switch, Alert, Linking, Modal, Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import { File, Paths } from 'expo-file-system';
+import * as Haptics from 'expo-haptics';
 import FadeInView from '../../src/components/FadeInView';
 import { useTheme } from '../../src/hooks/useTheme';
 import { useHabitStore } from '../../src/store/habitStore';
@@ -15,6 +19,7 @@ import {
     requestNotificationPermissions,
 } from '../../src/services/notifications';
 import { isIconSwitchingAvailable } from '../../src/services/appIcon';
+import { shareExportedData, parseImportData } from '../../src/utils/dataExport';
 import { Spacing, Typography, BorderRadius, Shadows } from '../../src/constants/theme';
 
 const formatHour = (h: number): string => {
@@ -27,10 +32,12 @@ const ALL_HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 export default function SettingsScreen() {
     const { colors, isDark } = useTheme();
+    const router = useRouter();
     const insets = useSafeAreaInsets();
     const [notificationsEnabled, setNotificationsEnabled] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
 
+    const habits = useHabitStore((s) => s.habits);
     const reminderHours = useHabitStore((s) => s.reminderHours);
     const setReminderHours = useHabitStore((s) => s.setReminderHours);
 
@@ -76,6 +83,53 @@ export default function SettingsScreen() {
 
     const scheduleSubtitle = reminderHours.map(formatHour).join(' · ');
     const iconAvailable = isIconSwitchingAvailable();
+    const archivedCount = habits.filter(h => h.archived).length;
+
+    const handleExport = async () => {
+        try {
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            await shareExportedData(habits, reminderHours);
+        } catch (e: any) {
+            Alert.alert('Export Failed', e.message || 'Something went wrong.');
+        }
+    };
+
+    const handleImport = async () => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: 'application/json',
+                copyToCacheDirectory: true,
+            });
+            if (result.canceled) return;
+
+            const fileUri = result.assets[0].uri;
+            const file = new File(fileUri);
+            const content = await file.text();
+            const data = parseImportData(content);
+
+            Alert.alert(
+                'Import Data',
+                `This will replace your current ${habits.length} habit(s) with ${data.habits.length} imported habit(s). Continue?`,
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Import',
+                        style: 'destructive',
+                        onPress: () => {
+                            useHabitStore.setState({
+                                habits: data.habits,
+                                reminderHours: data.reminderHours,
+                            });
+                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                            Alert.alert('Success', `Imported ${data.habits.length} habits.`);
+                        },
+                    },
+                ]
+            );
+        } catch (e: any) {
+            Alert.alert('Import Failed', e.message || 'Could not read the file.');
+        }
+    };
 
     const SettingRow = ({ icon, iconColor, title, subtitle, rightElement, onPress, delay = 0 }: {
         icon: string; iconColor: string; title: string; subtitle?: string;
@@ -128,9 +182,42 @@ export default function SettingsScreen() {
                     rightElement={<View style={[styles.badge, { backgroundColor: (iconAvailable ? colors.success : colors.textMuted) + '20' }]}>
                         <Text style={[styles.badgeText, { color: iconAvailable ? colors.success : colors.textMuted }]}>{iconAvailable ? 'Active' : 'Unavailable'}</Text>
                     </View>} />
+                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>DATA</Text>
+                <SettingRow icon="download-outline" iconColor={colors.accent} title="Export Data"
+                    subtitle="Save your habits as a JSON backup file" delay={250}
+                    onPress={handleExport}
+                    rightElement={
+                        <Ionicons name="share-outline" size={18} color={colors.accent} />
+                    }
+                />
+                <SettingRow icon="push-outline" iconColor={colors.primary} title="Import Data"
+                    subtitle="Restore habits from a backup file" delay={300}
+                    onPress={handleImport}
+                    rightElement={
+                        <Ionicons name="document-outline" size={18} color={colors.primary} />
+                    }
+                />
+
+                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>HABITS</Text>
+                <SettingRow icon="archive-outline" iconColor={colors.warm} title="Archived Habits"
+                    subtitle={archivedCount > 0 ? `${archivedCount} archived habit${archivedCount !== 1 ? 's' : ''}` : 'No archived habits'}
+                    delay={350}
+                    onPress={() => router.push('/archived' as any)}
+                    rightElement={
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            {archivedCount > 0 && (
+                                <View style={[styles.badge, { backgroundColor: colors.warm + '20' }]}>
+                                    <Text style={[styles.badgeText, { color: colors.warm }]}>{archivedCount}</Text>
+                                </View>
+                            )}
+                            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+                        </View>
+                    }
+                />
+
                 <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>ABOUT</Text>
-                <SettingRow icon="information-circle" iconColor={colors.warm} title="HabitFlow" subtitle="Version 1.0.0" delay={300} />
-                <SettingRow icon="heart" iconColor={colors.fire} title="Built with ❤️" subtitle="Marshall Victor" delay={350} />
+                <SettingRow icon="information-circle" iconColor={colors.warm} title="HabitFlow" subtitle="Version 1.1.0" delay={400} />
+                <SettingRow icon="heart" iconColor={colors.fire} title="Built with ❤️" subtitle="Marshall Victor" delay={450} />
                 <FadeInView delay={400} style={styles.themeInfo}>
                     <Ionicons name={isDark ? 'moon' : 'sunny'} size={16} color={colors.textMuted} />
                     <Text style={[styles.themeText, { color: colors.textMuted }]}>{isDark ? 'Dark' : 'Light'} mode ·  System Settings</Text>
