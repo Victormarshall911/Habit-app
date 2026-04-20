@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     View,
     Text,
@@ -40,12 +40,12 @@ export default function AddHabitScreen() {
     const insets = useSafeAreaInsets();
     const addHabit = useHabitStore((s) => s.addHabit);
 
-    const [name, setName] = useState('');
-    const [selectedEmoji, setSelectedEmoji] = useState('💪');
-    const [selectedColor, setSelectedColor] = useState(HabitColors[0]);
-    const [selectedCategory, setSelectedCategory] = useState<HabitCategory>('other');
-    const [frequencyType, setFrequencyType] = useState<FrequencyType>('daily');
-    const [frequencyTarget, setFrequencyTarget] = useState(1);
+    const [name, setName] = React.useState('');
+    const [selectedEmoji, setSelectedEmoji] = React.useState('💪');
+    const [selectedColor, setSelectedColor] = React.useState(HabitColors[0]);
+    const [selectedCategory, setSelectedCategory] = React.useState<HabitCategory>('other');
+    const [frequencyType, setFrequencyType] = React.useState<FrequencyType>('daily');
+    const [frequencyTarget, setFrequencyTarget] = React.useState(1);
 
     const handleSave = async () => {
         if (!name.trim()) return;

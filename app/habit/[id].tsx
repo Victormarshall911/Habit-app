@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     View,
     Text,
@@ -45,8 +45,8 @@ export default function HabitDetailScreen() {
     const archiveHabit = useHabitStore((s) => s.archiveHabit);
     const getFrequencyProgress = useHabitStore((s) => s.getFrequencyProgress);
 
-    const [showNoteInput, setShowNoteInput] = useState(false);
-    const [noteText, setNoteText] = useState('');
+    const [showNoteInput, setShowNoteInput] = React.useState(false);
+    const [noteText, setNoteText] = React.useState('');
 
     if (!habit) {
         return (

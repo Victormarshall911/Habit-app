@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
     View, Text, StyleSheet, ScrollView,
     TouchableOpacity, Switch, Alert, Linking, Modal, Platform,
@@ -34,14 +34,14 @@ export default function SettingsScreen() {
     const { colors, isDark } = useTheme();
     const router = useRouter();
     const insets = useSafeAreaInsets();
-    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-    const [showTimePicker, setShowTimePicker] = useState(false);
+    const [notificationsEnabled, setNotificationsEnabled] = React.useState(false);
+    const [showTimePicker, setShowTimePicker] = React.useState(false);
 
     const habits = useHabitStore((s) => s.habits);
     const reminderHours = useHabitStore((s) => s.reminderHours);
     const setReminderHours = useHabitStore((s) => s.setReminderHours);
 
-    useEffect(() => {
+    React.useEffect(() => {
         getNotificationPermissionStatus().then((status) => {
             setNotificationsEnabled(status === 'granted');
         });
