@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
+import { readAsStringAsync } from 'expo-file-system/legacy';
 import * as Haptics from 'expo-haptics';
 import FadeInView from '../../src/components/FadeInView';
 import { useTheme } from '../../src/hooks/useTheme';
@@ -19,7 +20,7 @@ import {
     requestNotificationPermissions,
 } from '../../src/services/notifications';
 import { isIconSwitchingAvailable } from '../../src/services/appIcon';
-import { shareExportedData, parseImportData } from '../../src/utils/dataExport';
+import { shareExportedData, parseImportData, shareReport } from '../../src/utils/dataExport';
 import { Spacing, Typography, BorderRadius, Shadows } from '../../src/constants/theme';
 
 const formatHour = (h: number): string => {
@@ -85,10 +86,19 @@ export default function SettingsScreen() {
     const iconAvailable = isIconSwitchingAvailable();
     const archivedCount = habits.filter(h => h.archived).length;
 
-    const handleExport = async () => {
+    const handleBackup = async () => {
         try {
             await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             await shareExportedData(habits, reminderHours);
+        } catch (e: any) {
+            Alert.alert('Backup Failed', e.message || 'Something went wrong.');
+        }
+    };
+
+    const handleDownloadReport = async () => {
+        try {
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            await shareReport(habits);
         } catch (e: any) {
             Alert.alert('Export Failed', e.message || 'Something went wrong.');
         }
@@ -97,14 +107,13 @@ export default function SettingsScreen() {
     const handleImport = async () => {
         try {
             const result = await DocumentPicker.getDocumentAsync({
-                type: 'application/json',
+                type: '*/*', // More permissive to avoid greyed out files
                 copyToCacheDirectory: true,
             });
             if (result.canceled) return;
 
             const fileUri = result.assets[0].uri;
-            const file = new File(fileUri);
-            const content = await file.text();
+            const content = await readAsStringAsync(fileUri);
             const data = parseImportData(content);
 
             Alert.alert(
@@ -182,12 +191,20 @@ export default function SettingsScreen() {
                     rightElement={<View style={[styles.badge, { backgroundColor: (iconAvailable ? colors.success : colors.textMuted) + '20' }]}>
                         <Text style={[styles.badgeText, { color: iconAvailable ? colors.success : colors.textMuted }]}>{iconAvailable ? 'Active' : 'Unavailable'}</Text>
                     </View>} />
-                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>DATA</Text>
-                <SettingRow icon="download-outline" iconColor={colors.accent} title="Export Data"
-                    subtitle="Save your habits as a JSON backup file" delay={250}
-                    onPress={handleExport}
+                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>REPORTS</Text>
+                <SettingRow icon="document-text-outline" iconColor={colors.accent} title="Download Progress Report"
+                    subtitle="Get a professional table of your habits and streaks" delay={250}
+                    onPress={handleDownloadReport}
                     rightElement={
-                        <Ionicons name="share-outline" size={18} color={colors.accent} />
+                        <Ionicons name="chevron-forward" size={18} color={colors.accent} />
+                    }
+                />
+                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>BACKUP & RESTORE</Text>
+                <SettingRow icon="cloud-upload-outline" iconColor={colors.primary} title="Backup Data (JSON)"
+                    subtitle="Save a file to restore your data later" delay={250}
+                    onPress={handleBackup}
+                    rightElement={
+                        <Ionicons name="share-outline" size={18} color={colors.primary} />
                     }
                 />
                 <SettingRow icon="push-outline" iconColor={colors.primary} title="Import Data"
