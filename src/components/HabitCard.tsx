@@ -38,12 +38,11 @@ export default function HabitCard({
     const habits = useHabitStore((s) => s.habits);
     const toggleCompletion = useHabitStore((s) => s.toggleCompletion);
 
-    // Use the store's logic but in a separate useMemo to avoid re-render loops from selector identity
     const streak = React.useMemo(() => {
         const h = habits.find(x => x.id === habit.id);
         if (!h) return 0;
 
-        // Inline streak logic to be safer, or call a shared utility
+    
         const skips = h.skips || {};
         let s = 0;
         let currentDate = getDateString();
