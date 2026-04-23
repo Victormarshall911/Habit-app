@@ -8,7 +8,7 @@ interface CalendarHeatmapProps {
     completions: Record<string, boolean>;
     color: string;
     year?: number;
-    month?: number; // 0-indexed
+    month?: number; 
 }
 
 const CELL_SIZE = 12;
@@ -57,7 +57,7 @@ export default function CalendarHeatmap({
                 {monthName}
             </Text>
 
-            {/* Day labels */}
+            
             <View style={styles.row}>
                 {DAYS_OF_WEEK.map((day, i) => (
                     <View key={i} style={styles.cellWrapper}>
