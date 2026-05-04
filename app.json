@@ -51,10 +51,17 @@
                 "src": "./widgets/countdown.widget.tsx"
               }
             ]
+          },
+          "android": {
+            "widgets": [
+              {
+                "name": "CountdownWidget",
+                "src": "./widgets/countdown.widget.tsx"
+              }
+            ]
           }
         }
-      ],
-      "@react-native-community/datetimepicker"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
