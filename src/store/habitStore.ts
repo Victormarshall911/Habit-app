@@ -2,13 +2,21 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { Habit, HabitCategory, FrequencyType, HabitFrequency } from '../types/habit';
+import { Habit, HabitCategory, FrequencyType, HabitFrequency, Countdown } from '../types/habit';
 import {
     calculateStreak,
     calculateLongestStreak,
-    getTotalCompletions,
-    getTotalSkips
 } from '../utils/habitStats';
+
+import {
+    getDateString,
+    getPreviousDate,
+    getWeekStart,
+    getMonthStart,
+    countCompletionsInRange
+} from '../utils/date';
+import { syncWidget } from '../services/widget-sync';
+import { cancelNotification } from '../services/notifications';
 
 interface FrequencyProgress {
     completed: number;
@@ -18,6 +26,7 @@ interface FrequencyProgress {
 
 interface HabitState {
     habits: Habit[];
+    countdowns: Countdown[];
     reminderHours: number[];
 
     // CRUD
@@ -49,15 +58,11 @@ interface HabitState {
     getFrequencyProgress: (id: string) => FrequencyProgress;
     getActiveHabits: () => Habit[];
     getArchivedHabits: () => Habit[];
-}
 
-import {
-    getDateString,
-    getPreviousDate,
-    getWeekStart,
-    getMonthStart,
-    countCompletionsInRange
-} from '../utils/date';
+    // Countdowns
+    addCountdown: (countdown: Omit<Countdown, 'id' | 'createdAt'>, notificationId?: string) => void;
+    deleteCountdown: (id: string) => void;
+}
 
 // Ensure backward compatibility: fill defaults for habits loaded from old schema
 const migrateHabit = (h: any): Habit => ({
@@ -74,6 +79,7 @@ export const useHabitStore = create<HabitState>()(
     persist(
         (set, get) => ({
             habits: [],
+            countdowns: [],
             reminderHours: [8, 12, 16, 20],
 
             addHabit: (habitData) => {
@@ -128,7 +134,6 @@ export const useHabitStore = create<HabitState>()(
                 set({ reminderHours: [...hours].sort((a, b) => a - b) });
             },
 
-            // Archiving
             archiveHabit: (id) => {
                 set((state) => ({
                     habits: state.habits.map((h) =>
@@ -145,7 +150,6 @@ export const useHabitStore = create<HabitState>()(
                 }));
             },
 
-            // Skip days
             toggleSkip: (id, date) => {
                 set((state) => ({
                     habits: state.habits.map((h) => {
@@ -164,7 +168,6 @@ export const useHabitStore = create<HabitState>()(
                 }));
             },
 
-            // Notes
             setNote: (id, date, note) => {
                 set((state) => ({
                     habits: state.habits.map((h) => {
@@ -180,11 +183,9 @@ export const useHabitStore = create<HabitState>()(
                 }));
             },
 
-            // Reordering
             reorderHabits: (orderedIds) => {
                 set((state) => {
                     const newHabits = [...state.habits];
-                    // Create a map for quick lookup of new order
                     const orderMap = new Map(orderedIds.map((id, index) => [id, index]));
 
                     return {
@@ -197,7 +198,6 @@ export const useHabitStore = create<HabitState>()(
                     };
                 });
             },
-
 
             getStreak: (id) => {
                 const habit = get().habits.find((h) => h.id === id);
@@ -286,21 +286,45 @@ export const useHabitStore = create<HabitState>()(
                     .filter(h => h.archived === true)
                     .map(migrateHabit);
             },
+
+            // Countdowns
+            addCountdown: (countdownData, notificationId) => {
+                const newCountdown: Countdown = {
+                    id: 'cd_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+                    createdAt: new Date().toISOString(),
+                    notificationId,
+                    ...countdownData,
+                };
+                const newCountdowns = [...(get().countdowns || []), newCountdown];
+                set({ countdowns: newCountdowns });
+                syncWidget(newCountdowns);
+            },
+
+            deleteCountdown: (id) => {
+                const cd = (get().countdowns || []).find(c => c.id === id);
+                if (cd?.notificationId) {
+                    cancelNotification(cd.notificationId);
+                }
+                const newCountdowns = (get().countdowns || []).filter((c) => c.id !== id);
+                set({ countdowns: newCountdowns });
+                syncWidget(newCountdowns);
+            },
         }),
         {
             name: 'habit-storage',
             storage: createJSONStorage(() => AsyncStorage),
-            version: 2,
+            version: 3,
             migrate: (persistedState: any, version: number) => {
-                if (version < 2) {
-                    // Version 1 to 2 migration: Ensure all habits are migrated
-                    const state = persistedState as HabitState;
+                const state = persistedState as any;
+                if (version < 3) {
+                    if (state.habits && !state.countdowns) {
+                        state.countdowns = [];
+                    }
                     if (state.habits) {
                         state.habits = state.habits.map(migrateHabit);
                     }
-                    return state;
                 }
-                return persistedState;
+                return state;
             },
         }
     )

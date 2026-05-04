@@ -18,6 +18,7 @@ import { useTheme } from '../../src/hooks/useTheme';
 import { useHabitStore, HabitCategory } from '../../src/store/habitStore';
 import { getGreeting, getDateString, formatDateDisplay } from '../../src/utils/date';
 import HabitCard from '../../src/components/HabitCard';
+import CountdownCard from '../../src/components/CountdownCard';
 import CircularProgress from '../../src/components/CircularProgress';
 import EmptyState from '../../src/components/EmptyState';
 import {
@@ -34,6 +35,8 @@ export default function HomeScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const habits = useHabitStore((s) => s.habits);
+    const countdowns = useHabitStore((s) => s.countdowns || []);
+    const deleteCountdown = useHabitStore((s) => s.deleteCountdown);
     const reorderHabits = useHabitStore((s) => s.reorderHabits);
 
     const activeHabits = React.useMemo(() =>
@@ -72,6 +75,10 @@ export default function HomeScreen() {
 
     const handleAddHabit = React.useCallback(() => {
         router.push('/add-habit');
+    }, []);
+
+    const handleAddCountdown = React.useCallback(() => {
+        router.push('/add-countdown');
     }, []);
 
     const handleHabitPress = React.useCallback((id: string) => {
@@ -127,6 +134,41 @@ export default function HomeScreen() {
                             {dateDisplay}
                         </Text>
                     </View>
+                </FadeInView>
+
+                {/* Countdowns Section */}
+                <FadeInView delay={150}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                            Countdowns
+                        </Text>
+                        <TouchableOpacity onPress={handleAddCountdown}>
+                            <Ionicons name="add-circle-outline" size={22} color={colors.primary} />
+                        </TouchableOpacity>
+                    </View>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.countdownScroll}
+                    >
+                        {countdowns.length === 0 ? (
+                            <TouchableOpacity 
+                                onPress={handleAddCountdown}
+                                style={[styles.addCountdownPlaceholder, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }]}
+                            >
+                                <Ionicons name="timer-outline" size={24} color={colors.textMuted} />
+                                <Text style={[styles.addCountdownText, { color: colors.textMuted }]}>Add a countdown</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            countdowns.map((cd) => (
+                                <CountdownCard 
+                                    key={cd.id} 
+                                    countdown={cd} 
+                                    onDelete={deleteCountdown}
+                                />
+                            ))
+                        )}
+                    </ScrollView>
                 </FadeInView>
 
                 {/* Progress Card */}
@@ -505,5 +547,24 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         ...Shadows.lg,
+    },
+    // Countdowns
+    countdownScroll: {
+        paddingHorizontal: Spacing.lg,
+        paddingBottom: Spacing.lg,
+    },
+    addCountdownPlaceholder: {
+        width: 200,
+        height: 140,
+        borderRadius: BorderRadius['2xl'],
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: Spacing.xs,
+    },
+    addCountdownText: {
+        ...Typography.caption,
+        fontWeight: '600',
     },
 });

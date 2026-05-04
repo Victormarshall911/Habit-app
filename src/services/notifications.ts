@@ -164,6 +164,47 @@ export async function initializeNotifications(customHours?: number[]): Promise<v
     }
 }
 
+export async function scheduleCountdownNotification(id: string, title: string, targetDate: string, emoji: string): Promise<string | undefined> {
+    ensureHandlerConfigured();
+    const mod = getNotificationsModule();
+    if (!mod) return;
+
+    try {
+        const triggerDate = new Date(targetDate);
+        if (triggerDate.getTime() <= Date.now()) return;
+
+        // Schedule the final notification
+        const identifier = await mod.scheduleNotificationAsync({
+            content: {
+                title: `${emoji} Countdown Finished!`,
+                body: `Your countdown "${title}" has reached zero!`,
+                sound: 'default',
+                data: { countdownId: id },
+                ...(Platform.OS === 'android' && { channelId: 'habit-reminders' }),
+            },
+            trigger: {
+                type: mod.SchedulableTriggerInputTypes.DATE,
+                date: triggerDate,
+            },
+        });
+
+        return identifier;
+    } catch (e) {
+        console.warn('Failed to schedule countdown notification:', e);
+        return undefined;
+    }
+}
+
+export async function cancelNotification(identifier: string): Promise<void> {
+    const mod = getNotificationsModule();
+    if (!mod) return;
+    try {
+        await mod.cancelScheduledNotificationAsync(identifier);
+    } catch (e) {
+        console.warn('Failed to cancel notification:', e);
+    }
+}
+
 /** Returns true if the notifications module loaded successfully */
 export function isNotificationsAvailable(): boolean {
     return getNotificationsModule() !== null;

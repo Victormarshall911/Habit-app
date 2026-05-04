@@ -38,7 +38,23 @@
           "icon": "./assets/notification-icon.png",
           "color": "#7C3AED"
         }
-      ]
+      ],
+      [
+        "expo-widgets",
+        {
+          "ios": {
+            "appGroupIdentifier": "group.com.habitflow.app",
+            "widgets": [
+              {
+                "name": "CountdownWidget",
+                "target": "CountdownWidget",
+                "src": "./widgets/countdown.widget.tsx"
+              }
+            ]
+          }
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true

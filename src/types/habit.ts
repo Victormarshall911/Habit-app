@@ -20,3 +20,13 @@ export interface Habit {
     skips: Record<string, boolean>;       // "YYYY-MM-DD" -> true
     notes: Record<string, string>;        // "YYYY-MM-DD" -> note text
 }
+
+export interface Countdown {
+    id: string;
+    title: string;
+    targetDate: string; // ISO string
+    color: string;
+    emoji: string;
+    createdAt: string;
+    notificationId?: string;
+}

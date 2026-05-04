@@ -97,6 +97,13 @@ export default function RootLayout() {
                             }}
                         />
                         <Stack.Screen
+                            name="add-countdown"
+                            options={{
+                                presentation: 'modal',
+                                animation: 'slide_from_bottom',
+                            }}
+                        />
+                        <Stack.Screen
                             name="habit/[id]"
                             options={{
                                 animation: 'slide_from_right',
