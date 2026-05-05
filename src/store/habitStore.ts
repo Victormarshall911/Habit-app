@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Habit, HabitCategory, FrequencyType, HabitFrequency, Countdown } from '../types/habit';
+export type { Habit, HabitCategory, FrequencyType, HabitFrequency, Countdown };
 import {
     calculateStreak,
     calculateLongestStreak,
