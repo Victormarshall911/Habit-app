@@ -1,9 +1,11 @@
 'widget';
-import { VStack, HStack, Text, Spacer, Circle } from '@expo/ui';
+import { VStack, HStack, Text, Spacer, Circle, ZStack } from '@expo/ui/swift-ui';
+import { padding, frame, background, foregroundStyle, font, cornerRadius } from '@expo/ui/swift-ui/modifiers';
 import { createWidget } from 'expo-widgets';
 
-// This is the native UI for the iOS Home Screen Widget
-export default createWidget(({ entry }) => {
+// This is the native UI for the Home Screen Widget (iOS & Android)
+export default createWidget('CountdownWidget', (props: { entry: { title?: string, targetDate?: string, color?: string, emoji?: string } }) => {
+    const { entry } = props;
     // entry contains the data passed from the main app
     const { title = 'No Event', targetDate, color = '#7C3AED', emoji = '🎯' } = entry;
 
@@ -23,18 +25,21 @@ export default createWidget(({ entry }) => {
     const { days, hours, mins, finished } = getTimeLeft();
 
     return (
-        <VStack style={{ 
-            flex: 1, 
-            padding: 16, 
-            backgroundColor: color, 
-            borderRadius: 22,
-            justifyContent: 'space-between'
-        }}>
-            <HStack style={{ alignItems: 'center', gap: 8 }}>
-                <Circle style={{ width: 32, height: 32, backgroundColor: 'rgba(255,255,255,0.2)' }}>
-                    <Text style={{ fontSize: 18 }}>{emoji}</Text>
-                </Circle>
-                <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }} numberOfLines={1}>
+        <VStack 
+            alignment="leading"
+            modifiers={[
+                frame({ maxWidth: Infinity, maxHeight: Infinity }),
+                padding({ all: 16 }),
+                background(color),
+                cornerRadius(22)
+            ]}
+        >
+            <HStack spacing={8} alignment="center">
+                <ZStack modifiers={[frame({ width: 32, height: 32 })]}>
+                    <Circle modifiers={[foregroundStyle('rgba(255,255,255,0.2)')]} />
+                    <Text modifiers={[font({ size: 18 })]}>{emoji}</Text>
+                </ZStack>
+                <Text modifiers={[foregroundStyle('white'), font({ size: 14, weight: 'semibold' })]}>
                     {title}
                 </Text>
             </HStack>
@@ -42,20 +47,20 @@ export default createWidget(({ entry }) => {
             <Spacer />
 
             {finished ? (
-                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                <Text modifiers={[foregroundStyle('white'), font({ size: 18, weight: 'bold' })]}>
                     ✨ Time's up!
                 </Text>
             ) : (
-                <VStack style={{ gap: 2 }}>
-                    <HStack style={{ alignItems: 'baseline', gap: 4 }}>
-                        <Text style={{ color: 'white', fontSize: 32, fontWeight: '800' }}>
+                <VStack alignment="leading" spacing={2}>
+                    <HStack alignment="bottom" spacing={4}>
+                        <Text modifiers={[foregroundStyle('white'), font({ size: 32, weight: 'heavy' })]}>
                             {days}
                         </Text>
-                        <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '600' }}>
+                        <Text modifiers={[foregroundStyle('rgba(255,255,255,0.7)'), font({ size: 12, weight: 'semibold' })]}>
                             DAYS LEFT
                         </Text>
                     </HStack>
-                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: '500' }}>
+                    <Text modifiers={[foregroundStyle('rgba(255,255,255,0.8)'), font({ size: 14, weight: 'medium' })]}>
                         {hours}h {mins}m remaining
                     </Text>
                 </VStack>

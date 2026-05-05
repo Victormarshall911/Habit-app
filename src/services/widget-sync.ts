@@ -55,7 +55,7 @@ export async function syncWidget(countdowns: Countdown[]) {
     } catch (error) {
         // Silently fail in dev if something goes wrong with the native bridge
         if (__DEV__) {
-            console.log('[WidgetSync] Sync skipped or failed:', error.message);
+            console.log('[WidgetSync] Sync skipped or failed:', error instanceof Error ? error.message : String(error));
         }
     }
 }
