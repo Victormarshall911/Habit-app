@@ -51,14 +51,6 @@
                 "src": "./widgets/countdown.widget.tsx"
               }
             ]
-          },
-          "android": {
-            "widgets": [
-              {
-                "name": "CountdownWidget",
-                "src": "./widgets/countdown.widget.tsx"
-              }
-            ]
           }
         }
       ]
